@@ -1,4 +1,5 @@
 from collections import Counter
+from tqdm import tqdm
 import itertools, copy
 from more_itertools import split_before
 import os, traceback, time, warnings, sys
@@ -97,7 +98,7 @@ def limit_max_track(p_midi, MAX_TRACK=40):  # merge track with least notes and l
     good_instruments.sort(
         key=lambda x: (not x.is_drum, -len(x.notes)))  # place drum track or the most note track at first
     assert good_instruments[0].is_drum == True or len(good_instruments[0].notes) >= len(
-        good_instruments[1].notes), tuple(len(x.notes) for x in good_instruments[:3])
+        good_instruments[1].notes), tuple(len(x.notes) for x in good_instruments[:2])
     # assert good_instruments[0].is_drum == False, (, len(good_instruments[2]))
     track_idx_lst = list(range(len(good_instruments)))
 
@@ -134,6 +135,12 @@ def get_init_note_events(p_midi):  # extract all notes in midi file
     for track_idx, instrument in enumerate(p_midi.instruments):
         # track_idx_lst.append(track_idx)
         for note in instrument.notes:
+            if note.start > 0x3FFFFFFF:
+                note.start = note.start & 0x3FFFFFFF
+            if note.end > 0x3FFFFFFF:
+                note.end = note.end & 0x3FFFFFFF
+            assert note.end > note.start, "non-positive note duration"
+            assert note.end <= 0xFFFFF and note.start <= 0xFFFFF, "note time too large"
             note_dur = note.end - note.start
 
             # special case: note_dur too long
@@ -472,7 +479,7 @@ def mp_handler(file_paths):
     print(f'starts processing {len(file_paths)} midis with {WORKERS} processes')
 
     with multiprocessing.Pool(WORKERS) as p:
-        for event_seq in p.imap(mp_worker, file_paths):
+        for event_seq in tqdm(p.imap(mp_worker, file_paths), total=len(file_paths)):
             if isinstance(event_seq, str):
                 broken_counter += 1
             elif len(event_seq) > 0:
@@ -489,7 +496,7 @@ def mp_handler(file_paths):
     if not os.path.exists('data/preprocessed/'):
         os.makedirs('data/preprocessed/')
 
-    with open("data/preprocessed/raw_corpus.txt", "w", encoding="utf-8") as f:
+    with open("data/preprocessed/raw_corpus.txt", "a", encoding="utf-8") as f:
         for idx, piece in enumerate(event_seq_res):
             f.write(' '.join(piece) + '\n')
 
@@ -500,6 +507,9 @@ def mp_handler(file_paths):
 if __name__ == '__main__':
 
     warnings.filterwarnings('ignore')
+
+    f = open("data/preprocessed/raw_corpus.txt", "w+", encoding="utf-8")
+    f.close()
 
     folder_path = "data/midis"
     file_paths = []

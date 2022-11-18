@@ -5,14 +5,15 @@ from tqdm import tqdm
 import subprocess#, multiprocessing
 from functools import partial
 from p_tqdm import p_uimap
+
 RATIO = 4
-MERGE_CNT = 700
+MERGE_CNT = 128
 CHAR_CNT = 128
 WORKERS = 32
 
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from encoding import pit2str, str2pit, ispitch
+from encoding import pit2str, str2pit, ispitch, ison
 
 def resort(voc: str) -> str:
     assert(len(voc) % 2 == 0), voc
@@ -84,7 +85,9 @@ def load_before_apply_bpe(bpe_res_dir):
     merges = []
     with open(bpe_res_dir+'codes.txt', 'r') as f:
         for line in f:
-            a, b, _ = line.strip().split()
+            a, b, *c = line.strip().split()
+            if len(c) > 1:
+                continue
             a,b,ab = resort(a), resort(b), resort(a+b)
             
             a_ind, b_ind, ab_ind = merged_voc_to_int[a], merged_voc_to_int[b], len(merged_vocs)
@@ -115,16 +118,19 @@ def count_single_mulpies(toks, ratio=RATIO):
     mulpies = dict()
     chord_dict = Counter()
     l_toks = len(toks)
+    num_pitch_tok = 0
+    mulpi_lengths = []
     for idx in range(0, l_toks, ratio):
         e, d = toks[idx:idx+2]
-
-        if not ispitch(e):
+        if not ison(e):
             if len(mulpies) > 0:
                 for dur, mulpi in mulpies.items():
+                    mulpi_lengths.append(len(mulpi))
                     if len(mulpi) > 1:
                         chord_dict[tuple(sorted(list(mulpi), key=str2pit))] += 1
                 mulpies = dict()
         else:
+            num_pitch_tok += 1
             mulpies.setdefault(d, set()).add(e)
 
     if len(mulpies) > 0:
@@ -132,7 +138,7 @@ def count_single_mulpies(toks, ratio=RATIO):
             if len(mulpi) > 1:
                 chord_dict[tuple(sorted(list(mulpi), key=str2pit))] += 1
 
-    return chord_dict, l_toks // ratio
+    return chord_dict, l_toks // ratio, num_pitch_tok, mulpi_lengths
 
 
 if __name__ == '__main__':
@@ -151,10 +157,15 @@ if __name__ == '__main__':
 
     chord_dict = Counter()
     before_total_tokens = 0
-    for sub_chord_dict, l_toks in p_uimap(count_single_mulpies, raw_data, num_cpus=WORKERS):
+    before_note_tokens = 0
+    all_mulpi_lengths = []
+    for sub_chord_dict, l_toks, num_pitch_tok, mulpi_length in p_uimap(count_single_mulpies, raw_data, num_cpus=WORKERS):
         chord_dict += sub_chord_dict
         before_total_tokens += l_toks
-    
+        before_note_tokens += num_pitch_tok
+        all_mulpi_lengths.extend(mulpi_length)
+    before_avg_mulpi_length = sum(all_mulpi_lengths)/len(all_mulpi_lengths)
+    print(f'before total tokens: {before_total_tokens}, before note tokens: {before_note_tokens}, before avg mulpi length: {before_avg_mulpi_length}')
     mulpi_list = sorted(chord_dict.most_common(), key=lambda x: (-x[1], x[0]))
     with open(output_dir+'ori_voc_cnt.txt', 'w') as f:
         f.write(str(len(mulpi_list)) + '\n')
@@ -163,7 +174,7 @@ if __name__ == '__main__':
     with open(output_dir+'codes.txt', 'w') as stdout:
         with open(output_dir+'merged_voc_list.txt', 'w') as stderr:
             subprocess.run(['./music_bpe_exec', 'learnbpe', f'{MERGE_CNT}', output_dir+'ori_voc_cnt.txt'], stdout=stdout, stderr=stderr)
-    print(f'learnBPE finished, time elapsed:　{time.time() - start_time}')
+    print(f'learnBPE finished, time elapsed: {time.time() - start_time}')
     start_time = time.time()
 
     merges, merged_vocs = load_before_apply_bpe(output_dir)
@@ -175,17 +186,30 @@ if __name__ == '__main__':
             f.write(voc + ' ' + str(cnt) + '\n')
     ave_len_bpe = sum(k*v for k, v in divided_bpe_total.items()) / sum(divided_bpe_total.values())
     ave_len_ori = sum(len(k)*v for k, v in mulpi_list) / sum(v for k, v in mulpi_list)
-    print(f'average mulpi length original:　{ave_len_ori}, average mulpi length after bpe: {ave_len_bpe}')
-    print(f'applyBPE for word finished, time elapsed:　{time.time() - start_time}')
+    print(f'average mulpi length original: {ave_len_ori}, average mulpi length after bpe: {ave_len_bpe}')
+    print(f'applyBPE for word finished, time elapsed: {time.time() - start_time}')
     start_time = time.time()
 
     # applyBPE for corpus
 
     after_total_tokens = 0
+    after_note_tokens = 0
+    new_data = []
     with open(merged_data_path, 'w') as f:
         for x in tqdm(raw_data, desc="writing bpe data"): # unable to parallelize for out of memory
             new_toks = apply_bpe_for_sentence(x, merges, merged_vocs, divide_res)
-            after_total_tokens += len(new_toks) // RATIO
             f.write(' '.join(new_toks) + '\n')
-    print(f'applyBPE for corpus finished, time elapsed:　{time.time() - start_time}')
-    print(f'before tokens: {before_total_tokens}, after tokens: {after_total_tokens}, delta: {(before_total_tokens - after_total_tokens) / before_total_tokens}')
+            new_data.append(' '.join(new_toks))
+    print(f'applyBPE for corpus finished, time elapsed:  {time.time() - start_time}')
+    after_total_tokens = 0
+    after_note_tokens = 0
+    all_mulpi_lengths = []
+    for sub_chord_dict, l_toks, num_pitch_tok, mulpi_length in p_uimap(count_single_mulpies, new_data, num_cpus=WORKERS):
+        # chord_dict += sub_chord_dict
+        after_total_tokens += l_toks
+        after_note_tokens += num_pitch_tok
+        all_mulpi_lengths.extend(mulpi_length)
+    after_avg_mulpi_length = sum(all_mulpi_lengths)/len(all_mulpi_lengths)
+    print(f'Total token number - before: {before_total_tokens}, after: {after_total_tokens}, reduce rate: {1 - after_total_tokens / before_total_tokens}')
+    print(f'Notes token number - before: {before_note_tokens}, after: {after_note_tokens}, reduce rate: {1 - after_note_tokens / before_note_tokens}')
+    print(f'Avg Mulpi Length - before: {before_avg_mulpi_length}, after: {after_avg_mulpi_length}, reduce rate: {1 - after_avg_mulpi_length / before_avg_mulpi_length}')
