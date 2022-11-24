@@ -480,7 +480,7 @@ def mp_handler(file_paths):
     print(f'starts processing {len(file_paths)} midis with {WORKERS} processes')
 
     with multiprocessing.Pool(WORKERS) as p:
-        for event_seq in tqdm(p.imap(mp_worker, file_paths), total=len(file_paths)):
+        for event_seq in tqdm(p.imap(mp_worker, file_paths)):
             if isinstance(event_seq, str):
                 broken_counter += 1
             elif len(event_seq) > 0:
@@ -521,4 +521,12 @@ if __name__ == '__main__':
                 file_paths.append(file_path)
 
     # run multi-processing midi extractor
-    mp_handler(file_paths)
+    batch_length = 10000
+    print('batch_length:', batch_length)
+    batchs = [
+        file_paths[i:i+batch_length]
+        for i in range(0, len(file_paths), batch_length)
+    ]
+    print(len(batchs), 'batchs')
+    for batch_file_path in batchs:
+        mp_handler(batch_file_path)
