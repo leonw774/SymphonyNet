@@ -97,8 +97,9 @@ def limit_max_track(p_midi, MAX_TRACK=40):  # merge track with least notes and l
     good_instruments = p_midi.instruments
     good_instruments.sort(
         key=lambda x: (not x.is_drum, -len(x.notes)))  # place drum track or the most note track at first
-    assert good_instruments[0].is_drum == True or len(good_instruments[0].notes) >= len(
-        good_instruments[1].notes), tuple(len(x.notes) for x in good_instruments[:2])
+    if len(good_instruments) > 1:
+        assert good_instruments[0].is_drum or len(good_instruments[0].notes) >= len(
+            good_instruments[1].notes), tuple(len(x.notes) for x in good_instruments[:2])
     # assert good_instruments[0].is_drum == False, (, len(good_instruments[2]))
     track_idx_lst = list(range(len(good_instruments)))
 
