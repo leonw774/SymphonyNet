@@ -499,7 +499,7 @@ def mp_handler(file_paths):
         for idx, piece in enumerate(event_seq_res):
             f.write(' '.join(piece) + '\n')
 
-    print("Create txt file takes: ", time.time() - txt_start)
+    print("Write txt file takes: ", time.time() - txt_start)
     # ----------------------------------------------------------------------------------
 
 
