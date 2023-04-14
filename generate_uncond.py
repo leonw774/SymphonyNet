@@ -19,7 +19,7 @@ parser.add_argument(
 parser.add_argument(
     '--min-len',
     type=int,
-    default=256
+    default=0
 )
 parser.add_argument(
     '--max-len', '-l',
@@ -95,11 +95,12 @@ note_seq_to_midi_file(note_seq, output_name)
 if args.output_txt:
     output_name = f'{args.output_name}_prime{max_measure_cnt}_chord{max_chord_measure_cnt}_{timestamp}.txt'
     with open(output_name, 'w+', encoding='utf8') as f:
-        f.write('event, duration, track_number, index, position, measure\n')
+        f.write('event    duration track_id index     position measure\n')
         f.write(
             '\n'.join([
-                ', '.join([
-                    music_dict.index2word(i, x) if i < 4 else str(x) for i, x in enumerate(t)
+                ' '.join([
+                    f'{music_dict.index2word(i, x):<8}' if i == 0 else f'{x:<8}'
+                    for i, x in enumerate(t)
                 ])
                 for t in generated
             ])
