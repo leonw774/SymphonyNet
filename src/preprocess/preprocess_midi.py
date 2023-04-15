@@ -129,7 +129,6 @@ def limit_max_track(p_midi, MAX_TRACK=40):  # merge track with least notes and l
 
     p_midi.instruments = good_instruments
 
-NOTE_ONSET_LIMIT = 0x7FFFFFFF
 
 def get_init_note_events(p_midi):  # extract all notes in midi file
 
@@ -137,7 +136,6 @@ def get_init_note_events(p_midi):  # extract all notes in midi file
     for track_idx, instrument in enumerate(p_midi.instruments):
         # track_idx_lst.append(track_idx)
         for note in instrument.notes:
-            assert note.start <= NOTE_ONSET_LIMIT or note.end <= NOTE_ONSET_LIMIT, 'note.start/end onset too large'
             note_dur = note.end - note.start
             if note_dur < 0:
                 continue
