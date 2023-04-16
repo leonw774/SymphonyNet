@@ -129,7 +129,7 @@ def limit_max_track(p_midi, MAX_TRACK=40):  # merge track with least notes and l
 
     p_midi.instruments = good_instruments
 
-NOTE_ONSET_LIMIT = 0xFFFFFFF
+NOTE_ONSET_LIMIT = 0x7FFFFFFF
 
 def get_init_note_events(p_midi):  # extract all notes in midi file
 
