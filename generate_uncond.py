@@ -95,7 +95,7 @@ note_seq_to_midi_file(note_seq, output_name)
 if args.output_txt:
     output_name = f'{args.output_name}_prime{max_measure_cnt}_chord{max_chord_measure_cnt}_{timestamp}.txt'
     with open(output_name, 'w+', encoding='utf8') as f:
-        f.write('event    duration track_id index     position measure\n')
+        f.write('event    duration track_id index    position measure\n')
         f.write(
             '\n'.join([
                 ' '.join([
