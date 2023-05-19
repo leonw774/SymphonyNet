@@ -1,4 +1,4 @@
-import time, os, json
+import time, os, json, sys
 from collections import Counter
 from pprint import pprint
 from tqdm import tqdm
@@ -7,7 +7,10 @@ from functools import partial
 from p_tqdm import p_uimap
 
 RATIO = 4
-MERGE_CNT = 128
+if len(sys.argv) == 2:
+    MERGE_CNT = int(sys.argv[1])
+else:
+    MERGE_CNT = 700
 CHAR_CNT = 128
 WORKERS = 32
 
