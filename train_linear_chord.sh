@@ -16,8 +16,11 @@ DATA_BIN=linear_${MAX_POS_LEN}_chord_bpe_hardloss${IGNORE_META_LOSS}
 fi
 DATA_BIN_DIR=data/model_spec/${DATA_BIN}/bin
 
-
-N_GPU_LOCAL=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
+if [ -n "$CUDA_VISIBLE_DEVICES" ]; then
+	N_GPU_LOCAL=$(echo $CUDA_VISIBLE_DEVICES | tr -cd , | wc -c ;)
+else
+	N_GPU_LOCAL=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
+fi
 UPDATE_FREQ=$((${BATCH_SIZE} / ${MAX_SENTENCES} / ${N_GPU_LOCAL}))
 NN_ARCH=linear_transformer_multi
 CHECKPOINT_SUFFIX=${DATA_BIN}_PI${PI_LEVEL}
