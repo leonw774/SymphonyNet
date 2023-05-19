@@ -26,7 +26,7 @@ NN_ARCH=linear_transformer_multi
 CHECKPOINT_SUFFIX=${DATA_BIN}_PI${PI_LEVEL}
 
 
-CUDA_VISIBLE_DEVICES="0,1,2,3,4,5,6,7" PYTHONWARNINGS="ignore" fairseq-train 	${DATA_BIN_DIR} \
+PYTHONWARNINGS="ignore" fairseq-train 	${DATA_BIN_DIR} \
 	--seed ${SEED} \
 	--user-dir src/fairseq/linear_transformer \
 	--task symphony_modeling --criterion multiple_loss \
