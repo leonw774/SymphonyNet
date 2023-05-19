@@ -18,6 +18,7 @@ DATA_BIN_DIR=data/model_spec/${DATA_BIN}/bin
 
 if [ -n "$CUDA_VISIBLE_DEVICES" ]; then
 	N_GPU_LOCAL=$(echo $CUDA_VISIBLE_DEVICES | tr -cd , | wc -c ;)
+	N_GPU_LOCAL=$((${N_GPU_LOCAL} + 1))
 else
 	N_GPU_LOCAL=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
 fi
