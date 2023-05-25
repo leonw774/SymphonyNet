@@ -12,6 +12,11 @@ from src.fairseq.gen_utils import (
 
 parser = ArgumentParser()
 parser.add_argument(
+    '--num-output', '-n',
+    type=int,
+    default=1
+)
+parser.add_argument(
     '--max-measure-count', '-m',
     type=int,
     default=4
@@ -79,29 +84,31 @@ max_len = args.max_len
 max_chord_measure_cnt = 0
 prime, ins_label = process_prime_midi(midi_name, max_measure_cnt, max_chord_measure_cnt)
 
-while True:
-    try:
-        generated, ins_logits = gen_one(m, prime, MAX_LEN=max_len, MIN_LEN=args.min_len)
-        break
-    except Exception as e:
-        print(e)
-        continue
-trk_ins_map = get_trk_ins_map(generated, ins_logits)
-note_seq = get_note_seq(generated, trk_ins_map)
-timestamp = time.strftime("%m-%d_%H-%M-%S", time.localtime())
-output_name = f'{args.output_name}_prime{max_measure_cnt}_chord{max_chord_measure_cnt}_{timestamp}.mid'
-note_seq_to_midi_file(note_seq, output_name)
+for _ in range(args.num_output):
 
-if args.output_txt:
-    output_name = f'{args.output_name}_prime{max_measure_cnt}_chord{max_chord_measure_cnt}_{timestamp}.txt'
-    with open(output_name, 'w+', encoding='utf8') as f:
-        f.write('event    duration track_id index    position measure\n')
-        f.write(
-            '\n'.join([
-                ' '.join([
-                    f'{music_dict.index2word(i, x):<8}' if i == 0 else f'{x:<8}'
-                    for i, x in enumerate(t)
+    while True:
+        try:
+            generated, ins_logits = gen_one(m, prime, MAX_LEN=max_len, MIN_LEN=args.min_len)
+            break
+        except Exception as e:
+            print(e)
+            continue
+    trk_ins_map = get_trk_ins_map(generated, ins_logits)
+    note_seq = get_note_seq(generated, trk_ins_map)
+    timestamp = time.strftime("%m-%d_%H-%M-%S", time.localtime())
+    output_name = f'{args.output_name}_prime{max_measure_cnt}_chord{max_chord_measure_cnt}_{timestamp}.mid'
+    note_seq_to_midi_file(note_seq, output_name)
+
+    if args.output_txt:
+        output_name = f'{args.output_name}_prime{max_measure_cnt}_chord{max_chord_measure_cnt}_{timestamp}.txt'
+        with open(output_name, 'w+', encoding='utf8') as f:
+            f.write('event    duration track_id index    position measure\n')
+            f.write(
+                '\n'.join([
+                    ' '.join([
+                        f'{music_dict.index2word(i, x):<8}' if i == 0 else f'{x:<8}'
+                        for i, x in enumerate(t)
+                    ])
+                    for t in generated
                 ])
-                for t in generated
-            ])
-        )
+            )
