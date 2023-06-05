@@ -514,7 +514,7 @@ if __name__ == '__main__':
         os.path.basename(test_path.strip())
         for test_path in open("data/test_pathlist.txt", "r", encoding="utf-8").readlines()
     }
-    print('\n'.join(test_midi_names))
+    # print('\n'.join(test_midi_names))
 
     folder_path = "data/midis"
     file_paths = []

@@ -9,7 +9,7 @@ ln -s ~/MyMidiModel/data/midis/SymphonyNet_Dataset data/midis
 cp data/snd_test_pathlist.txt data/test_pathlist.txt
 python3 src/preprocess/preprocess_midi.py 2>&1 | tee -a $log_path
 python3 src/preprocess/get_bpe_data.py 2>&1 | tee -a $log_path
-mv data/bpe_res_snd data/bpe_res
+mv data/bpe_res data/bpe_res_snd
 mv data/preprocessed/raw_corpus.txt data/preprocessed/raw_corpus_snd.txt
 mv data/preprocessed/raw_corpus_bpe.txt data/preprocessed/raw_corpus_snd_bpe.txt
 rm data/midis
@@ -22,6 +22,6 @@ python3 src/preprocess/preprocess_midi.py 2>&1 | tee -a $log_path
 python3 src/preprocess/get_bpe_data.py 2>&1 | tee -a $log_path
 mv data/preprocessed/raw_corpus.txt data/preprocessed/raw_corpus_lmd.txt
 mv data/preprocessed/raw_corpus_bpe.txt data/preprocessed/raw_corpus_lmd_bpe.txt
-mv data/bpe_res_lmd data/bpe_res
+mv data/bpe_res data/bpe_res_lmd
 rm data/midis
 rm data/test_pathlist.txt
