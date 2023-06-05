@@ -510,13 +510,20 @@ if __name__ == '__main__':
     f = open("data/preprocessed/raw_corpus.txt", "w+", encoding="utf-8")
     f.close()
 
+    test_midi_names = {
+        os.path.basename(test_path.strip())
+        for test_path in open("data/test_pathlist.txt", "r", encoding="utf-8").readlines()
+    }
+    print('\n'.join(test_midi_names))
+
     folder_path = "data/midis"
     file_paths = []
     for path, directories, files in os.walk(folder_path):
         for file in files:
             if file.endswith(".mid") or file.endswith(".MID"):
-                file_path = path + "/" + file
-                file_paths.append(file_path)
+                if file not in test_midi_names:
+                    file_path = path + "/" + file
+                    file_paths.append(file_path)
 
     # run multi-processing midi extractor
     batch_length = 10000
