@@ -149,7 +149,12 @@ def get_next_chord(ori):
 
 def get_next(model, p, memory, has_prime = False):
     device = next(model.parameters()).device
-    pr = torch.from_numpy(np.array(p))[None, None, :].to(device)
+    if getattr(model, 'is_vanilla') is None:
+        # p shape is (ratio,)
+        pr = torch.from_numpy(np.array(p))[None, None, :].to(device)
+    else:
+        # p shape is (seq_len, ratio)
+        pr = torch.from_numpy(np.array(p))[None, :, :].to(device)
 
     (e,d,t,ins), memory = model(src_tokens=pr, src_lengths=memory)
     e, d, t, ins = e[0,:], d[0,:], t[0,:], ins[0,:]
@@ -220,20 +225,23 @@ def gen_one(model, prime_nums, MAX_LEN = 4090, MIN_LEN = 0):
         cur_rel_pos = 0
         cur_mea = 0
         for item, next_item in zip(prime[:-1], prime[1:]):
-
-            (e,d,t,ins), memo = get_next(model, item, memo, has_prime=True)
+            if getattr(model, 'is_vanilla') is None:
+                (e,d,t,ins), memo = get_next(model, item, memo, has_prime=True)
             cur_rel_pos, cur_mea = calc_pos(next_item[0], cur_rel_pos, cur_mea)
             ins_list.append(ins)
 
-
-        (e,d,t,ins), memo = get_next(model, prime[-1], memo, has_prime=False)
+        if getattr(model, 'is_vanilla') is None:
+            (e,d,t,ins), memo = get_next(model, prime[-1], memo, has_prime=False)
         cur_rel_pos, cur_mea = calc_pos(e, cur_rel_pos, cur_mea)
 
         prime.append((e,d,t,len(prime)+1, cur_rel_pos, cur_mea))
         ins_list.append(ins)
 
         for i in tqdm(range(MAX_LEN - len(prime))):
-            (e,d,t,ins), memo = get_next(model, prime[-1], memo)
+            if getattr(model, 'is_vanilla') is None:
+                (e,d,t,ins), memo = get_next(model, prime[-1], memo)
+            else:
+                (e,d,t,ins) = get_next(model, prime, memo)
             if t == EOS:
                 assert len(prime) > MIN_LEN, 'Invalid generation: Generated excerpt too short.'
                 break
