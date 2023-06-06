@@ -151,7 +151,7 @@ if __name__ == '__main__':
     print('-'*32)
     raw_data_path = 'data/preprocessed/raw_corpus_snd.txt'
     merged_data_path = 'data/preprocessed/raw_corpus_snd_(bpe_lmd).txt'
-    output_dir = 'data/bpe_res_lmd_full/'
+    output_dir = 'data/bpe_res_128_lmd_full/'
     # os.makedirs(output_dir, exist_ok=True)
     raw_data = []
     with open(raw_data_path, 'r') as f:
@@ -211,7 +211,7 @@ if __name__ == '__main__':
 
     raw_data_path = 'data/preprocessed/raw_corpus_lmd.txt'
     merged_data_path = 'data/preprocessed/raw_corpus_lmd_(bpe_snd).txt'
-    output_dir = 'data/bpe_res_snd/'
+    output_dir = 'data/bpe_res_128_snd/'
     # os.makedirs(output_dir, exist_ok=True)
     raw_data = []
     with open(raw_data_path, 'r') as f:
