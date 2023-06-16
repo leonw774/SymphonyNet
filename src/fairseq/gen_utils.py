@@ -149,7 +149,7 @@ def get_next_chord(ori):
 
 def get_next(model, p, memory, has_prime = False):
     device = next(model.parameters()).device
-    if getattr(model, 'is_vanilla') is None:
+    if getattr(model, 'is_vanilla', None) is None:
         # p shape is (ratio,)
         pr = torch.from_numpy(np.array(p))[None, None, :].to(device)
     else:
@@ -225,12 +225,12 @@ def gen_one(model, prime_nums, MAX_LEN = 4090, MIN_LEN = 0):
         cur_rel_pos = 0
         cur_mea = 0
         for item, next_item in zip(prime[:-1], prime[1:]):
-            if getattr(model, 'is_vanilla') is None:
+            if getattr(model, 'is_vanilla', None) is None:
                 (e,d,t,ins), memo = get_next(model, item, memo, has_prime=True)
             cur_rel_pos, cur_mea = calc_pos(next_item[0], cur_rel_pos, cur_mea)
             ins_list.append(ins)
 
-        if getattr(model, 'is_vanilla') is None:
+        if getattr(model, 'is_vanilla', None) is None:
             (e,d,t,ins), memo = get_next(model, prime[-1], memo, has_prime=False)
         cur_rel_pos, cur_mea = calc_pos(e, cur_rel_pos, cur_mea)
 
@@ -238,7 +238,7 @@ def gen_one(model, prime_nums, MAX_LEN = 4090, MIN_LEN = 0):
         ins_list.append(ins)
 
         for i in tqdm(range(MAX_LEN - len(prime))):
-            if getattr(model, 'is_vanilla') is None:
+            if getattr(model, 'is_vanilla', None) is None:
                 (e,d,t,ins), memo = get_next(model, prime[-1], memo)
             else:
                 (e,d,t,ins) = get_next(model, prime, memo)

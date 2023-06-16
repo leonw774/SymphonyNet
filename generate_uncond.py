@@ -53,6 +53,11 @@ parser.add_argument(
     type=str,
     default='output'
 )
+parser.add_argument(
+    '--checkpoint-path', '-c',
+    type=str,
+    default=''
+)
 args = parser.parse_args()
 print('\n'.join([f'{k}:{v}' for k, v in vars(args).items()]))
 
@@ -63,13 +68,17 @@ RATIO = 4
 BPE = "_bpe" # or ""
 
 DATA_BIN=f"linear_{MAX_POS_LEN}_chord{BPE}_hardloss{IGNORE_META_LOSS}"
-CHECKPOINT_SUFFIX=f"{DATA_BIN}_PI{PI_LEVEL}"
 DATA_BIN_DIR=f"./data/model_spec/{DATA_BIN}/bin/"
 DATA_VOC_DIR=f"./data/model_spec/{DATA_BIN}/vocabs/"
 music_dict.load_vocabs_bpe(DATA_VOC_DIR, './data/bpe_res/' if BPE == '_bpe' else None)
 
+if args.checkpoint_path == '':
+    checkpoint_path = f'checkpoint_last_{DATA_BIN}_PI{PI_LEVEL}.pt'
+else:
+    checkpoint_path = args.checkpoint_path
+
 custom_lm = FairseqLanguageModel.from_pretrained('.',
-    checkpoint_file=f'checkpoint_last_{CHECKPOINT_SUFFIX}.pt',
+    checkpoint_file=checkpoint_path,
     data_name_or_path=DATA_BIN_DIR,
     user_dir="./src/fairseq/linear_transformer_inference"
 )

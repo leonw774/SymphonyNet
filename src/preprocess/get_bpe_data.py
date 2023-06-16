@@ -7,10 +7,10 @@ from functools import partial
 from p_tqdm import p_uimap
 
 RATIO = 4
-if len(sys.argv) == 2:
-    MERGE_CNT = int(sys.argv[1])
-else:
-    MERGE_CNT = 700
+MERGE_CNT = 700
+if __name__ == '__main__':
+    if len(sys.argv) == 2:
+        MERGE_CNT = int(sys.argv[1])
 CHAR_CNT = 128
 WORKERS = 32
 
