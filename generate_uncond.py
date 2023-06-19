@@ -107,6 +107,7 @@ for _ in range(args.num_output):
     timestamp = time.strftime("%m-%d_%H-%M-%S", time.localtime())
     output_name = f'{args.output_name}_prime{max_measure_cnt}_chord{max_chord_measure_cnt}_{timestamp}.mid'
     note_seq_to_midi_file(note_seq, output_name)
+    print('Generated', output_name)
 
     if args.output_txt:
         output_name = f'{args.output_name}_prime{max_measure_cnt}_chord{max_chord_measure_cnt}_{timestamp}.txt'
