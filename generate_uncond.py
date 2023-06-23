@@ -98,12 +98,13 @@ for _ in range(args.num_output):
     while True:
         try:
             generated, ins_logits = gen_one(m, prime, MAX_LEN=max_len, MIN_LEN=args.min_len)
+            trk_ins_map = get_trk_ins_map(generated, ins_logits)
+            note_seq = get_note_seq(generated, trk_ins_map)
             break
         except Exception as e:
             print(e)
             continue
-    trk_ins_map = get_trk_ins_map(generated, ins_logits)
-    note_seq = get_note_seq(generated, trk_ins_map)
+
     timestamp = time.strftime("%m-%d_%H-%M-%S", time.localtime())
     output_name = f'{args.output_name}_prime{max_measure_cnt}_chord{max_chord_measure_cnt}_{timestamp}.mid'
     note_seq_to_midi_file(note_seq, output_name)
