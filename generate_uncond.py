@@ -1,5 +1,6 @@
 import time
 from argparse import ArgumentParser
+from traceback import format_exc
 from fairseq.models import FairseqLanguageModel
 from src.fairseq.gen_utils import (
     process_prime_midi,
@@ -94,17 +95,19 @@ max_chord_measure_cnt = 0
 prime, ins_label = process_prime_midi(midi_name, max_measure_cnt, max_chord_measure_cnt)
 
 for _ in range(args.num_output):
-
-    while True:
+    try_num = 0
+    while try_num < 100:
         try:
             generated, ins_logits = gen_one(m, prime, MAX_LEN=max_len, MIN_LEN=args.min_len)
             trk_ins_map = get_trk_ins_map(generated, ins_logits)
             note_seq = get_note_seq(generated, trk_ins_map)
             break
         except Exception as e:
-            print(e)
+            try_num += 1
+            print(format_exc())
             continue
-
+    if try_num >= 100:
+        continue
     timestamp = time.strftime("%m-%d_%H-%M-%S", time.localtime())
     output_name = f'{args.output_name}_prime{max_measure_cnt}_chord{max_chord_measure_cnt}_{timestamp}.mid'
     note_seq_to_midi_file(note_seq, output_name)
