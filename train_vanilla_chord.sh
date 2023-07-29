@@ -28,7 +28,7 @@ CHECKPOINT_SUFFIX=${DATA_BIN}_PI${PI_LEVEL}
 
 
 PYTHONWARNINGS="ignore" fairseq-train 	${DATA_BIN_DIR} \
-	--keep-best-checkpoints 2 --save-interval-updates 1000 --keep-interval-updates 2 \
+	-save-interval-updates 1000 \
 	--seed ${SEED} \
 	--user-dir src/fairseq/vanilla_transformer \
 	--task symphony_modeling --criterion multiple_loss \
