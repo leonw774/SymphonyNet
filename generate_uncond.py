@@ -48,6 +48,13 @@ parser.add_argument(
     default='./test.mid'
 )
 parser.add_argument(
+    '--primer-list', '-P',
+    metavar='midi_name_list',
+    dest='midi_name_list',
+    type=str,
+    default=''
+)
+parser.add_argument(
     '--output-path', '-o',
     metavar='output_name',
     dest='output_name',
@@ -88,13 +95,20 @@ if args.use_cuda:
     m.cuda()
 m.eval()
 
-midi_name = args.midi_name
-max_measure_cnt = args.max_measure_count
-max_len = args.max_len
-max_chord_measure_cnt = 0
-prime, ins_label = process_prime_midi(midi_name, max_measure_cnt, max_chord_measure_cnt)
+if args.midi_name_list == '':
+    midi_name = args.midi_name
+    max_measure_cnt = args.max_measure_count
+    max_len = args.max_len
+    max_chord_measure_cnt = 0
+    prime, ins_label = process_prime_midi(midi_name, max_measure_cnt, max_chord_measure_cnt)
+else:
+    midi_name_list = open(args.midi_name_list, 'r', encoding='utf8').readlines()
+    assert len(midi_name_list) == args.num_output
 
-for _ in range(args.num_output):
+
+for n in range(args.num_output):
+    if args.midi_name_list != '':
+        prime, ins_label = process_prime_midi(midi_name_list[n], max_measure_cnt, max_chord_measure_cnt)
     try_num = 0
     while try_num < 100:
         try:
