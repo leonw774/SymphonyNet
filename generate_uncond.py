@@ -110,7 +110,7 @@ for n in range(args.num_output):
     if args.midi_name_list != '':
         prime, ins_label = process_prime_midi(midi_name_list[n], max_measure_cnt, max_chord_measure_cnt)
     try_num = 0
-    while try_num < 100:
+    while try_num < 20:
         try:
             generated, ins_logits = gen_one(m, prime, MAX_LEN=max_len, MIN_LEN=args.min_len)
             trk_ins_map = get_trk_ins_map(generated, ins_logits)
@@ -118,10 +118,10 @@ for n in range(args.num_output):
             break
         except Exception as e:
             try_num += 1
-            print(repr(e))
-            # print(format_exc())
+            # print(repr(e))
+            print(format_exc())
             continue
-    if try_num >= 100:
+    if try_num >= 20:
         continue
     timestamp = time.strftime("%m-%d_%H-%M-%S", time.localtime())
     output_name = f'{args.output_name}_prime{max_measure_cnt}_chord{max_chord_measure_cnt}_{timestamp}.mid'
