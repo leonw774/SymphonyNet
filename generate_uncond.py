@@ -104,7 +104,8 @@ for _ in range(args.num_output):
             break
         except Exception as e:
             try_num += 1
-            print(format_exc())
+            print(repr(e))
+            # print(format_exc())
             continue
     if try_num >= 100:
         continue
