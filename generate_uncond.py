@@ -119,7 +119,7 @@ for n in range(args.num_output):
             break
         except Exception as e:
             try_num += 1
-            print(prime)
+            # print(prime)
             print(format_exc())
             continue
     if try_num >= 20:
