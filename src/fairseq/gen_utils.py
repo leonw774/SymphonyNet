@@ -66,7 +66,7 @@ class Dictionary(object):
 
 music_dict = Dictionary()
 
-prime_chords = None
+prime_chords = []
 prime_mea_idx = 0
 
 def process_prime_midi(prime_midi_path, max_measures, max_chord_measures, perm_inv = PI_LEVEL, ratio=RATIO, sample_len_max=MAX_POS_LEN):

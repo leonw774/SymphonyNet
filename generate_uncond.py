@@ -45,7 +45,7 @@ parser.add_argument(
     metavar='midi_name',
     dest='midi_name',
     type=str,
-    default='./test.mid'
+    default=''
 )
 parser.add_argument(
     '--primer-list', '-P',
@@ -95,41 +95,42 @@ if args.use_cuda:
     m.cuda()
 m.eval()
 
-if args.midi_name_list == '':
-    midi_name = args.midi_name
-    max_measure_cnt = args.max_measure_count
-    max_len = args.max_len
-    max_chord_measure_cnt = 0
-    prime, ins_label = process_prime_midi(midi_name, max_measure_cnt, max_chord_measure_cnt)
-else:
+max_chord_measure_cnt = 0
+if args.midi_name != '' or args.midi_name_list != '':
     midi_name_list = open(args.midi_name_list, 'r', encoding='utf8').readlines()
     assert len(midi_name_list) == args.num_output
 
-
 for n in range(args.num_output):
-    if args.midi_name_list != '':
-        prime, ins_label = process_prime_midi(midi_name_list[n], max_measure_cnt, max_chord_measure_cnt)
+    
+    # pprepare prime
+    if args.midi_name == '':
+        prime = [(2, 2, 2, 1, 0, 0)]
+    elif args.midi_name_list == '':
+        prime, ins_label = process_prime_midi(args.midi_name, args.max_measure_count, max_chord_measure_cnt)
+    else:
+        prime, ins_label = process_prime_midi(midi_name_list[n], args.max_measure_count, max_chord_measure_cnt)
+
     try_num = 0
     while try_num < 20:
         try:
-            generated, ins_logits = gen_one(m, prime, MAX_LEN=max_len, MIN_LEN=args.min_len)
+            generated, ins_logits = gen_one(m, prime, MAX_LEN=args.max_len, MIN_LEN=args.min_len)
             trk_ins_map = get_trk_ins_map(generated, ins_logits)
             note_seq = get_note_seq(generated, trk_ins_map)
             break
         except Exception as e:
             try_num += 1
-            # print(repr(e))
+            print(prime)
             print(format_exc())
             continue
     if try_num >= 20:
         continue
     timestamp = time.strftime("%m-%d_%H-%M-%S", time.localtime())
-    output_name = f'{args.output_name}_prime{max_measure_cnt}_chord{max_chord_measure_cnt}_{timestamp}.mid'
+    output_name = f'{args.output_name}_prime{args.max_measure_count}_chord{max_chord_measure_cnt}_{timestamp}.mid'
     note_seq_to_midi_file(note_seq, output_name)
     print('Generated', output_name)
 
     if args.output_txt:
-        output_name = f'{args.output_name}_prime{max_measure_cnt}_chord{max_chord_measure_cnt}_{timestamp}.txt'
+        output_name = f'{args.output_name}_prime{args.max_measure_count}_chord{max_chord_measure_cnt}_{timestamp}.txt'
         with open(output_name, 'w+', encoding='utf8') as f:
             f.write('event    duration track_id index    position measure\n')
             f.write(
