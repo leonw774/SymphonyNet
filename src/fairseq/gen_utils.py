@@ -59,11 +59,11 @@ class Dictionary(object):
             self.merges, self.merged_vocs = load_before_apply_bpe(BPE_DIR)
         
         # compute max_rel_pos by (number_of_<pos>_type + 1) * 2
-        self.max_rel_pos = len([
+        self.max_rel_pos = (len([
             e
-            for e in self.vocabs[0].keys()
+            for e in self.vocabs[0].values()
             if e.lower()[0] == 'p'
-        ]) * 2 + 1
+        ]) + 1) * 2
 
     def index2word(self, typ, i):
         return self.vocabs[typ][str(i)]
