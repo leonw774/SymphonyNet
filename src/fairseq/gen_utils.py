@@ -32,6 +32,7 @@ NOTON_PAD = BOS if IGNORE_META_LOSS == 0 else PAD
 NOTON_PAD_DUR = NOTON_PAD 
 NOTON_PAD_TRK = NOTON_PAD 
 
+
 class Dictionary(object):
     def __init__(self):
         self.vocabs = {}
@@ -39,6 +40,7 @@ class Dictionary(object):
         self.str2int = {}
         self.merges = None
         self.merged_vocs = None
+        self.max_rel_pos = 0
 
     def load_vocabs_bpe(self, DATA_VOC_DIR, BPE_DIR=None):
         for i in range(RATIO):
@@ -55,6 +57,13 @@ class Dictionary(object):
         # for BPE
         if BPE_DIR is not None:
             self.merges, self.merged_vocs = load_before_apply_bpe(BPE_DIR)
+        
+        # compute max_rel_pos by (number_of_<pos>_type + 1) * 2
+        self.max_rel_pos = len([
+            e
+            for e in self.vocabs[0].keys()
+            if e.lower()[0] == 'p'
+        ]) * 2 + 1
 
     def index2word(self, typ, i):
         return self.vocabs[typ][str(i)]
@@ -204,10 +213,12 @@ def calc_pos(evt_tok, last_rel_pos, last_mea_pos):
     elif typ == 'p':
         assert last_mea_pos % 3 == 0, f'Invalid generation: mea pos of <pos> must be a multiple of 3 {last_mea_pos}'
         assert (last_rel_pos+1) % 2 == 0, f'Invalid generation: rel pos of <pos> must be even {last_rel_pos+1}'
+        assert (last_rel_pos+1) <= music_dict.max_rel_pos, f'Invalid generation: rel pos must be no greater than {music_dict.max_rel_pos} {last_rel_pos+1}'
         return last_rel_pos+1, last_mea_pos
     
     assert last_mea_pos % 3 == 0, f'Invalid generation: mea pos of <on> must be a multiple of 3 {last_mea_pos}'
     if last_rel_pos % 2 == 0: # last token is a <pos>
+        assert (last_rel_pos+1) <= music_dict.max_rel_pos, f'Invalid generation: rel pos must be no greater than {music_dict.max_rel_pos} {last_rel_pos+1}'
         last_rel_pos += 1
     
     return last_rel_pos, last_mea_pos # on
