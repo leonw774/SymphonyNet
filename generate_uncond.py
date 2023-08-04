@@ -101,7 +101,7 @@ if args.midi_name != '' or args.midi_name_list != '':
     assert len(midi_name_list) == args.num_output
 
 for n in range(args.num_output):
-    
+
     # pprepare prime
     if args.midi_name == '':
         prime = [(2, 2, 2, 1, 0, 0)]
@@ -117,11 +117,13 @@ for n in range(args.num_output):
             trk_ins_map = get_trk_ins_map(generated, ins_logits)
             note_seq = get_note_seq(generated, trk_ins_map)
             break
-        except Exception as e:
+        except AssertionError as e:
             try_num += 1
-            # print(prime)
             print(format_exc())
             continue
+        except Exception as e:
+            print(format_exc())
+            raise e
     if try_num >= 20:
         continue
     timestamp = time.strftime("%m-%d_%H-%M-%S", time.localtime())
