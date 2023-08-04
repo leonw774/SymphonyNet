@@ -102,6 +102,7 @@ if args.midi_name_list != '':
     assert len(midi_name_list) == args.num_output
 
 for n in range(args.num_output):
+    start_time = time.time()
 
     # pprepare prime
     if args.midi_name == '' and args.midi_name_list == '':
@@ -121,7 +122,8 @@ for n in range(args.num_output):
             break
         except AssertionError as e:
             try_num += 1
-            print(format_exc())
+            print(repr(e))
+            # print(format_exc())
             continue
         except Exception as e:
             print(format_exc())
@@ -132,7 +134,7 @@ for n in range(args.num_output):
     output_name = f'{args.output_name}_prime{args.max_measure_count}_chord{max_chord_measure_cnt}_{timestamp}.mid'
     note_seq_to_midi_file(note_seq, output_name)
     print('Generated', output_name)
-
+    print('UsedTime', time.time() - start_time)
     if args.output_txt:
         output_name = f'{args.output_name}_prime{args.max_measure_count}_chord{max_chord_measure_cnt}_{timestamp}.txt'
         with open(output_name, 'w+', encoding='utf8') as f:
