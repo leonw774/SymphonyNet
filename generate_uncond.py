@@ -98,7 +98,8 @@ m.eval()
 
 max_chord_measure_cnt = 0
 if args.midi_name_list != '':
-    midi_name_list = open(args.midi_name_list, 'r', encoding='utf8').readlines()
+    with open(args.midi_name_list, 'r', encoding='utf8') as primer_paths_file:
+        midi_name_list = [p.strip() for p in primer_paths_file.readlines()]
     assert len(midi_name_list) == args.num_output
 
 for n in range(args.num_output):
