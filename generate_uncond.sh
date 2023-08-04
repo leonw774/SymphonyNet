@@ -1,3 +1,5 @@
+test_pathlist=$1
+sample_number=$(wc -l < $test_pathlist)
 echo "sample_number ${sample_number}"
 checkpoint_path=$2
 log_path=$(date '+%Y%m%d-%H%M%S')-generate_uncond.log
