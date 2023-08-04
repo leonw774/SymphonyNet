@@ -1,5 +1,5 @@
 test_pathlist=$1
-midis_dir_path=$2
+midi_dir_path=$2
 checkpoint_path=$3
 sample_number=$(wc -l < $test_pathlist)
 log_path=$(date '+%Y%m%d-%H%M%S')-generate_primer4.log
