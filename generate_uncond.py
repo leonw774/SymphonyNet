@@ -68,6 +68,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 print('\n'.join([f'{k}:{v}' for k, v in vars(args).items()]))
+assert args.midi_name == '' or args.midi_name_list == '', 'midi_name and midi_name_list are both given'
 
 MAX_POS_LEN = 4096
 PI_LEVEL = 2
@@ -96,19 +97,20 @@ if args.use_cuda:
 m.eval()
 
 max_chord_measure_cnt = 0
-if args.midi_name != '' or args.midi_name_list != '':
+if args.midi_name_list != '':
     midi_name_list = open(args.midi_name_list, 'r', encoding='utf8').readlines()
     assert len(midi_name_list) == args.num_output
 
 for n in range(args.num_output):
 
     # pprepare prime
-    if args.midi_name == '':
+    if args.midi_name == '' and args.midi_name_list == '':
         prime = [(2, 2, 2, 1, 0, 0)]
-    elif args.midi_name_list == '':
-        prime, ins_label = process_prime_midi(args.midi_name, args.max_measure_count, max_chord_measure_cnt)
     else:
-        prime, ins_label = process_prime_midi(midi_name_list[n], args.max_measure_count, max_chord_measure_cnt)
+        if args.midi_name != '':
+            prime, ins_label = process_prime_midi(args.midi_name, args.max_measure_count, max_chord_measure_cnt)
+        else:
+            prime, ins_label = process_prime_midi(midi_name_list[n], args.max_measure_count, max_chord_measure_cnt)
 
     try_num = 0
     while try_num < 20:
