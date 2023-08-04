@@ -249,22 +249,14 @@ def gen_one(model, prime_nums, MAX_LEN = 4090, MIN_LEN = 0):
         ins_list.append(ins)
 
         for i in tqdm(range(MAX_LEN - len(prime))):
-            try_num = 0
-            while True:
-                try:
-                    if getattr(model, 'is_vanilla', None) is None:
-                        (e,d,t,ins), memo = get_next(model, prime[-1], memo)
-                    else:
-                        (e,d,t,ins) = get_next(model, prime, memo)
-                    if t == EOS:
-                        assert len(prime) > MIN_LEN, 'Invalid generation: Generated excerpt too short.'
-                        break
-                    cur_rel_pos, cur_mea = calc_pos(e, cur_rel_pos, cur_mea)
-                except AssertionError as e:
-                    print(repr(e))
-                    try_num += 1
-                    if try_num > 20:
-                        break
+            if getattr(model, 'is_vanilla', None) is None:
+                (e,d,t,ins), memo = get_next(model, prime[-1], memo)
+            else:
+                (e,d,t,ins) = get_next(model, prime, memo)
+            if t == EOS:
+                assert len(prime) > MIN_LEN, 'Invalid generation: Generated excerpt too short.'
+                break
+            cur_rel_pos, cur_mea = calc_pos(e, cur_rel_pos, cur_mea)
 
             prime.append((e,d,t,len(prime)+1, cur_rel_pos, cur_mea))
             ins_list.append(ins)
