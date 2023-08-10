@@ -8,7 +8,7 @@ while read primer_file_path; do
    echo "${midi_dir_path}/${primer_file_path}" >> test_primer_paths.txt
 done < $test_pathlist
 start_time=$SECONDS
-python generate.py -P test_primer_paths.txt -n $sample_number -m 4 -l 4096 -o "generated/${primer_name}" -c $checkpoint_path --use-cuda | tee -a $log_path
+python generate.py -P test_primer_paths.txt -n $sample_number -m 4 -l 4096 -o "generated/primer4" -c $checkpoint_path --use-cuda | tee -a $log_path
 duration=$(( $SECONDS - start_time ))
 rm test_primer_paths.txt
 echo "Generation takes $duration seconds" | tee -a $log_path
