@@ -109,10 +109,14 @@ for n in range(args.num_output):
     if args.midi_name == '' and args.midi_name_list == '':
         prime = [(2, 2, 2, 1, 0, 0)]
     else:
-        if args.midi_name != '':
-            prime, ins_label = process_prime_midi(args.midi_name, args.max_measure_count, max_chord_measure_cnt)
-        else:
-            prime, ins_label = process_prime_midi(midi_name_list[n], args.max_measure_count, max_chord_measure_cnt)
+        try:
+            if args.midi_name != '':
+                prime, ins_label = process_prime_midi(args.midi_name, args.max_measure_count, max_chord_measure_cnt)
+            else:
+                prime, ins_label = process_prime_midi(midi_name_list[n], args.max_measure_count, max_chord_measure_cnt)
+        except (AssertionError, ValueError) as e:
+            print('Fail to process prime midi:', repr(e))
+            continue
 
     try_num = 0
     while try_num < 20:
